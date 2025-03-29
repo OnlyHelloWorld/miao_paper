@@ -1,0 +1,49 @@
+@startuml
+skinparam participantFontSize 25
+scale 900 width 
+scale 900 height
+
+title 分布式身份认证协议流程
+
+participant 设备 as D
+participant 区块链 as BC
+participant KGG组 as KGG
+participant 智能合约 as SC
+
+group 设备注册请求生成
+D -> D: 生成密钥对\n(PK_i,SK_i)
+D -> D: 计算H(PUF_i)\n绑定硬件特征
+D -> BC: 发送注册请求\nIR_i=⟨ID_i,PK_i,H(PUF_i),σ_SK⟩
+end
+
+group KGG共识验证
+BC -> KGG: 广播验证请求
+activate KGG
+KGG -> KGG: 1.物理特征校验\n(匹配预置数据库)
+KGG -> KGG: 2.行为模式分析\n(信号/采样稳定性)
+KGG -> KGG: 3.拓扑关联度计算\nT(n_i)=Σ(Q(v_j)/dist)
+deactivate KGG
+KGG --> BC: 返回验证结果\n(Byzantine共识)
+end
+
+group 门限证书颁发
+BC -> KGG: 触发(t,n)门限签名
+activate KGG
+KGG -> KGG: 聚合签名分片\n∏σ_SK_KGG(H(ID||PK))
+deactivate KGG
+KGG --> BC: 生成Cert_i\n存储至Verkle树
+BC -> D: 颁发设备证书\n⟨ID,PK,T_expire⟩
+end
+
+group 动态证书管理
+BC -> SC: 监控证书状态
+SC -> SC: 自动续期条件\n(T_expire-T_current < ΔT)
+SC -> SC: 异常检测机制\n(连续3次失败)
+alt 正常续期
+SC -> BC: 更新证书有效期
+else 异常撤销
+SC -> BC: 加入CRL列表
+end
+end
+
+@enduml
