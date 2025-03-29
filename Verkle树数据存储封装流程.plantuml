@@ -1,0 +1,26 @@
+@startuml
+skinparam participantFontSize 16
+title Verkle树数据存储封装流程
+
+participant 传感器 as S
+participant 区块链 as BC
+
+group 数据准备
+S -> S: 1.数据分块\n(256项/块)
+S -> S: 2.生成叶子节点\nSM3(数据+Nonce)
+end
+
+group 树构建
+BC -> BC: 3.构建多项式承诺\nKZG(f(x)) → C_j
+BC -> BC: 4.递归聚合生成\n根哈希V_root
+end
+
+group 上链验证
+BC -> BC: 5.锚定根哈希\n至区块头
+BC -> BC: 6.生成验证路径\n(KZG证明+父承诺)
+end
+
+S -> BC: 传输预处理数据块
+BC --> S: 返回存储位置索引
+
+@enduml

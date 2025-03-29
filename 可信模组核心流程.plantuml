@@ -1,0 +1,31 @@
+@startuml
+skinparam participantFontSize 16
+scale 900 width 
+scale 900 height
+
+title 可信模组核心流程
+
+participant 设备 as D
+participant 区块链 as BC
+participant KGG节点 as KGG
+participant 可信模块 as TEE
+
+group 身份认证
+D -> BC: 1.注册请求\n(含设备指纹)
+BC -> KGG: 2.KGG验证
+KGG --> BC: 3.门限签名
+BC -> D: 4.颁发证书
+end
+
+group 数据加密
+D -> D: 1.加密数据\n(SM4-CTR)
+D -> BC: 2.提交加密数据
+end
+
+group 故障修复
+BC -> TEE: 1.发送修复指令
+TEE -> BC: 2.执行反馈
+BC -> BC: 3.更新日志
+end
+
+@enduml

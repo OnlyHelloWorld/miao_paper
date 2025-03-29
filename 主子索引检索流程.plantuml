@@ -1,0 +1,31 @@
+@startuml
+skinparam participantFontSize 16
+scale 900 width 
+scale 900 height
+
+title 主子索引检索流程
+
+participant 传感器 as S
+participant 区块链 as BC
+participant 主索引 as MainIdx
+participant 子索引 as SubIdx
+participant 查询请求 as Audit
+
+group 索引构建
+S -> BC: 1.提交数据\n(设备n1,时间窗口)
+BC -> MainIdx: 2.更新主索引\n(聚合时间窗口)
+BC -> SubIdx: 3.生成子索引\n(时间分片→区块位置)
+MainIdx -> MainIdx: 关联Verkle验证路径
+SubIdx -> SubIdx: 存储KZG证明+指针
+end
+
+group 数据查询
+Audit -> MainIdx: 4.查询设备n1\n时间范围
+MainIdx --> Audit: 返回关联时间段集合
+Audit -> SubIdx: 5.按时间片查询\n具体数据位置
+SubIdx --> Audit: 返回区块指针+\n验证路径
+Audit -> BC: 6.获取数据并验证\n完整性
+BC --> Audit: 返回验证结果\n和CO₂总量
+end
+
+@enduml
